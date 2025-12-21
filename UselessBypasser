@@ -12,64 +12,6 @@ Method = "None"
 Bypass = ""
 UnBypassedString = ""
 
-local WaterXJuice = {
-    a="ส", A="ส",
-    b="ხ", B="ხ",
-    c="ϲ", C="ϲ",
-    d="d", D="d",
-    e="e", E="e",
-    f="f", F="f",
-    g="g", G="g",
-    h="h", H="h",
-    i="เ่", I="เ่",
-    j="j", J="j",
-    k="ҟ", K="ҟ",
-    l="Ɩ", L="Ɩ",
-    m="m", M="m",
-    n="ถ", N="ถ",
-    o="ჿ", O="ჿ",
-    p="p", P="p",
-    q="Q", Q="Q",
-    r="ꞅ", R="ꞅ",
-    s="ธ", S="ธ",
-    t="t", T="t",
-    u="ม", U="ม",
-    v="V", V="V",
-    w="w", W="w",
-    x="x", X="x",
-    y="у", Y="у",
-    z="Z", Z="Z"
-}
-
-local AxurBypasser = {
-    a = "ส", A = "ส",
-    b = "ხ", B = "ხ",
-    c = "ϲׁׅ", C = "ϲׁׅ",
-    d = "Ԁׁׁׅ", D = "Ԁׁׁׅ",
-    e = "ҿׁׅ", E = "ҿׁׅ",
-    f = "ƭׁׅ", F = "ƭׁׅ",
-    g = "ԍׁׅ", G = "ԍׁׅ",
-    h = "ꜧׁׅ", H = "ꜧׁׅ",
-    i = "เ่", I = "เ่",
-    j = "ៗ", J = "ៗ",
-    k = "ҟׁׅ", K = "ҟׁׅ",
-    l = "Ɩׁׅ", L = "Ɩׁׅ",
-    m = "ӎׁׅ", M = "ӎׁׅ",
-    n = "ถ", N = "ถ",
-    o = "ठ", O = "ठ",
-    p = "ƿׁׁׅ", P = "ƿׁׁׅ",
-    q = "ԛׁׅ", Q = "ԛׁׅ",
-    r = "ꞅׁׅ", R = "ꞅׁׅ",
-    s = "ऽ", S = "ऽ",
-    t = "τׁׅ", T = "τׁׅ",
-    u = "ม", U = "ม",
-    v = "ѵׁׁׅׅ", V = "ѵׁׁׅׅ",
-    w = "ѡ", W = "ѡ",
-    x = "Χׁׁׅׅ", X = "Χׁׁׅׅ",
-    y = "ឫ", Y = "ឫ",
-    z = "Ⴭ", Z = "Ⴭ"
-}
-
 local Window = Rayfield:CreateWindow({
    Name = "Useless Bypasser",
    Icon = 0, 
@@ -136,24 +78,6 @@ local CommaMethod = MainTab:CreateButton({
         Method = "Comma"
         BypassFunction(UnBypassedString)
         MethodLabel:Set("Selected Bypass Method: Comma Method", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local WaterXJuiceMethod = MainTab:CreateButton({
-    Name = "Set Bypass Method To: WaterXJuice Method",
-    Callback = function()
-        Method = "WaterXJuice"
-        BypassFunction(UnBypassedString)
-        MethodLabel:Set("Selected Bypass Method: WaterXJuice Method", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local AxurBypasserMethod = MainTab:CreateButton({
-    Name = "Set Bypass Method To: Axur Bypasser Method",
-    Callback = function()
-        Method = "AxurBypasser"
-        BypassFunction(UnBypassedString)
-        MethodLabel:Set("Selected Bypass Method: Axur Bypasser Method", nil, Color3.fromRGB(0, 0, 0), false) 
     end,
 })
 
@@ -259,18 +183,11 @@ function BypassFunction(UnBypassed)
             Bypass = Bypass .. Tricker .. Letter
         end
         BypassOutput:Set("Bypass Output: " .. tostring(Bypass), nil, Color3.fromRGB(0, 0, 0), false)
-    elseif Method == "WaterXJuice" then
+      elseif Method == "WillAddSoon" then
         Bypass = ""
         for Count = 1, #UnBypassed do
             local Character = UnBypassed:sub(Count, Count)
-            Bypass = Bypass .. (WaterXJuice[Character] or Character)
-        end
-        BypassOutput:Set("Bypass Output: " .. tostring(Bypass), nil, Color3.fromRGB(0, 0, 0), false)
-    elseif Method == "AxurBypasser" then
-        Bypass = ""
-        for Count = 1, #UnBypassed do
-            local Character = UnBypassed:sub(Count, Count)
-            Bypass = Bypass .. (AxurBypasser[Character] or Character)
+            Bypass = Bypass .. (SoonIHope[Character] or Character)
         end
         BypassOutput:Set("Bypass Output: " .. tostring(Bypass), nil, Color3.fromRGB(0, 0, 0), false)
     end
