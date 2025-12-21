@@ -157,29 +157,52 @@ function BypassFunction(UnBypassed)
         local Tricker = "™"
         Bypass = ""
 
-        for Count = 1, #UnBypassed do
-            local Letter = string.sub(UnBypassed, Count, Count)
+        for Count, CodePoint in utf8.codes(UnBypassed) do
+            local Letter = utf8.char(CodePoint)
             Bypass = Bypass .. Letter .. Tricker
         end
                 
-        local LastTM = string.find(Bypass, "™", 1, true)
+        local LastTM = string.find(Bypass, Tricker, 1, true)
         local Index = nil
                 
         while LastTM do
             Index = LastTM
-            LastTM = string.find(Bypass, "™", Index + 1, true)
+            LastTM = string.find(Bypass, Tricker, Index + 1, true)
         end
         if Index then
-            Bypass = string.sub(Bypass, 1, Index - 1) .. string.sub(Bypass, Index + 3)
+        Bypass =
+            string.sub(Bypass, 1, Index - 1) .. string.sub(Bypass, Index + #Tricker)
         end
         BypassOutput:Set("Bypass Output: " .. tostring(Bypass), nil, Color3.fromRGB(0, 0, 0), false) 
     elseif Method == "Comma" then
         local Tricker = "؍"
-        local Reversed = string.reverse(UnBypassed)
+        local Reversed = {}
         Bypass = ""
+        local Characters = {}
+        local IsLTR = true
         
-        for Count = 1, #Reversed do
-            local Letter = string.sub(Reversed, Count, Count)
+        for Count, CodePoint in utf8.codes(UnBypassed) do
+            table.insert(Characters, utf8.char(CodePoint))
+        end
+        
+        for Count, CodePoint in utf8.codes(UnBypassed) do
+            if
+                (CodePoint >= 0x0590 and CodePoint <= 0x05FF) or (CodePoint >= 0x0600 and CodePoint <= 0x06FF) or (CodePoint >= 0x0750 and CodePoint <= 0x077F) or (CodePoint >= 0x08A0 and CodePoint <= 0x08FF) or (CodePoint >= 0x0700 and CodePoint <= 0x074F) or  (CodePoint >= 0x0780 and CodePoint <= 0x07BF) or (CodePoint >= 0x07C0 and CodePoint <= 0x07FF) or (CodePoint >= 0xFB50 and CodePoint <= 0xFDFF) or (CodePoint >= 0xFE70 and CodePoint <= 0xFEFF)     
+            then
+                IsLTR = false
+                break
+            end
+        end
+
+        if IsLTR then
+            for Count = #Characters, 1, -1 do
+                table.insert(Reversed, Characters[Count])
+            end
+        else
+            Reversed = Characters
+        end
+
+        for Count, Letter in ipairs(Reversed) do
             Bypass = Bypass .. Tricker .. Letter
         end
         BypassOutput:Set("Bypass Output: " .. tostring(Bypass), nil, Color3.fromRGB(0, 0, 0), false)
