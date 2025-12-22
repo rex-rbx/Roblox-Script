@@ -1,3 +1,11 @@
+--[[
+  I Hope you Guys Enjoy!
+  -2EzMyBoi
+]]
+
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/2EzMyBoi/Roblox-Script/refs/heads/main/UselessAI",true))()
+
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local TextChatService = game:GetService("TextChatService")
 local ChatService = game:GetService("Chat")
