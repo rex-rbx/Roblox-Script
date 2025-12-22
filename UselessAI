@@ -15,6 +15,223 @@ GroqAPIKey = ""
 AIPersonality = ""
 AIQuestion = ""
 
+local Window = Rayfield:CreateWindow({
+   Name = "Useless AI",
+   Icon = 0, 
+   LoadingTitle = "Useless AI",
+   LoadingSubtitle = "By 2EzMyBoi",
+   ShowText = "AI Menu",
+   Theme = "Default", 
+
+   ToggleUIKeybind = "Z",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, 
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, 
+      FileName = "Useless"
+   },
+
+   Discord = {
+      Enabled = false, 
+      Invite = "noinvitelink", 
+      RememberJoins = true 
+   },
+
+   KeySystem = false, 
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key", 
+      SaveKey = true, 
+      GrabKeyFromSite = false,
+      Key = {"Hello"} 
+   }
+})
+
+local MainTab = Window:CreateTab("Main", nil)
+local MainSection = MainTab:CreateSection("Information")
+local ImportantLabel = MainTab:CreateLabel("The Script Is Still In Beta, Expect Some Bugs.", nil, Color3.fromRGB(0, 0, 0), false)
+local ImportantLabel = MainTab:CreateLabel("Important: You Will Need To Add Your Own Groq API Key [Tutorial Dropping Soon!].", nil, Color3.fromRGB(0, 0, 0), false)
+local WarningLabel = MainTab:CreateLabel("Warning: Groq Does Not Allow Users To Use VPNs So Please Turn Off Any Connected VPNs.", nil, Color3.fromRGB(0, 0, 0), false)
+local AIModelSection = MainTab:CreateSection("AI Model")
+local AIModelLabel = MainTab:CreateLabel("Selected AI Model: None.", nil, Color3.fromRGB(0, 0, 0), false)
+local GPTOSS120B = MainTab:CreateButton({
+    Name = "Set AI Model To: GPT OSS 120B",
+    Callback = function()
+        AIModel = "GPTOSS120B"  
+        AIModelLabel:Set("Selected AI Model: GPT OSS 120B.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local KimiK2 = MainTab:CreateButton({
+    Name = "Set AI Model To: Kimi K2",
+    Callback = function()
+        AIModel = "KimiK2"  
+        AIModelLabel:Set("Selected AI Model: Kimi K2.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local Qwen332B = MainTab:CreateButton({
+    Name = "Set AI Model To: Qwen 3 32B",
+    Callback = function()
+        AIModel = "Qwen332B"  
+        AIModelLabel:Set("Selected AI Model: Qwen 3 32B.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local Llama4Scout = MainTab:CreateButton({
+    Name = "Set AI Model To: Llama 4 Scout",
+    Callback = function()
+        AIModel = "Llama4Scout"  
+        AIModelLabel:Set("Selected AI Model: Llama 4 Scout.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local AIOutPutMethodSection = MainTab:CreateSection("AI OutPut Method")
+local AIOutPutMethodLabel = MainTab:CreateLabel("Selected OutPut Method: None.", nil, Color3.fromRGB(0, 0, 0), false)
+local OutputMethodNotificationButton = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Notification",
+    Callback = function()
+        OutPutMethod = "Notification"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Notification.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local OutputMethodChat = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Chat",
+    Callback = function()
+        OutPutMethod = "Chat"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Chat.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local OutputMethodCopyButton = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Copy",
+    Callback = function()
+        OutPutMethod = "Copy"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Copy.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local MainAIPart = MainTab:CreateSection("Main")
+
+local GroqAPIKeyInput = MainTab:CreateInput({
+    Name = "Groq API Key",
+    CurrentValue = "",
+    PlaceholderText = "Your API Key Starts With 'gsk_'",
+    RemoveTextAfterFocusLost = false,
+    Flag = "GroqAPIKey",
+    Callback = function(Text)
+        GroqAPIKey = tostring(Text)
+    end,
+})
+
+local AIPersonalityInput = MainTab:CreateInput({
+    Name = "Personality",
+    CurrentValue = "",
+    PlaceholderText = "You Are SpongeBob",
+    RemoveTextAfterFocusLost = false,
+    Flag = "AIPersonality",
+    Callback = function(Text)
+        AIPersonality = tostring(Text)
+    end,
+})
+
+local Question = MainTab:CreateInput({
+    Name = "Question",
+    CurrentValue = "",
+    PlaceholderText = "Does Mr. Krabs UnderPay You?",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Question",
+    Callback = function(Text)
+        AIQuestion = tostring(Text)
+    end,
+})
+
+local Ask = MainTab:CreateButton({
+    Name = "Ask AI",
+    Callback = function()
+        if AIModel == "" then
+            Rayfield:Notify({
+                Title = "No Chosen Model",
+                Content = "AI Model Is Not Chosen, Please Choose An AI Model",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if OutPutMethod == "" then
+            Rayfield:Notify({
+                Title = "No Chosen OutPut Method",
+                Content = "OutPut Method Is Not Chosen, Please Choose An OutPut Method",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if GroqAPIKey == "" then
+            Rayfield:Notify({
+                Title = "No API Key",
+                Content = "There is No API Key Provided, Please Provide Us With The API Key",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if AIPersonality == "" then
+            Rayfield:Notify({
+                Title = "No Personality Entered",
+                Content = "There is Personality Provided, Please Provide Us With A Personality",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if AIQuestion == "" then
+            Rayfield:Notify({
+                Title = "No Question Entered",
+                Content = "There is Question Provided, Please Provide Us With A Question",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+            
+        AIFunction()
+    end,
+})
+
+local OthersTab = Window:CreateTab("Others", nil)
+
+local CopyButton = OthersTab:CreateButton({
+   Name = "Copy Pastebin Profile",
+   Callback = function()
+        setclipboard("https://pastebin.com/u/2EzMyBoi")
+   end,
+})
+
+local Discord = OthersTab:CreateButton({
+   Name = "Copy Discord Invite",
+   Callback = function()
+        setclipboard("https://discord.gg/Q9zpPAUBVG")
+   end,
+})
+
+local UnLoad = OthersTab:CreateButton({
+   Name = "Un-Load",
+   Callback = function()
+        Rayfield:Destroy()
+   end,
+})
+
 function AIFunction()
     local GroqURL = "https://api.Groq.com/openai/v1/chat/completions"
     local Model = ""
@@ -169,8 +386,8 @@ function AIFunction()
     
     if AIModel == "GPTOSS120B" then
         Groq:SetModel("openai/gpt-oss-120b")
-    elseif AIModel == "GPTOSS20B" then
-        Groq:SetModel("openai/gpt-oss-20b")
+    elseif AIModel == "KimiK2" then
+        Groq:SetModel("moonshotai/kimi-k2-instruct-0905")
     elseif AIModel == "Qwen332B" then
         Groq:SetModel("qwen/qwen3-32b")
     elseif AIModel == "Llama4Scout" then
@@ -210,197 +427,3 @@ function AIFunction()
     
     return Groq
 end
-
-local Window = Rayfield:CreateWindow({
-   Name = "Useless AI",
-   Icon = 0, 
-   LoadingTitle = "Useless AI",
-   LoadingSubtitle = "By 2EzMyBoi",
-   ShowText = "AI Menu",
-   Theme = "Default", 
-
-   ToggleUIKeybind = "Z",
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, 
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, 
-      FileName = "Useless"
-   },
-
-   Discord = {
-      Enabled = false, 
-      Invite = "noinvitelink", 
-      RememberJoins = true 
-   },
-
-   KeySystem = false, 
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided",
-      FileName = "Key", 
-      SaveKey = true, 
-      GrabKeyFromSite = false,
-      Key = {"Hello "} 
-   }
-})
-
-local MainTab = Window:CreateTab("Main", nil)
-local MainSection = MainTab:CreateSection("Information")
-local ImportantLabel = MainTab:CreateLabel("The Script Is Still In Beta, Expect Some Bugs.", nil, Color3.fromRGB(0, 0, 0), false)
-local ImportantLabel = MainTab:CreateLabel("Important: You Will Need To Add Your Own Groq API Key [Tutorial Dropping Soon!].", nil, Color3.fromRGB(0, 0, 0), false)
-local WarningLabel = MainTab:CreateLabel("Warning: Groq Does Not Allow Users To Use VPNs So Please Turn Off Any Connected VPNs.", nil, Color3.fromRGB(0, 0, 0), false)
-local AIModelSection = MainTab:CreateSection("AI Model")
-local AIModelLabel = MainTab:CreateLabel("Selected AI Model: None.", nil, Color3.fromRGB(0, 0, 0), false)
-local GPTOSS120B = MainTab:CreateButton({
-    Name = "Set AI Model To: GPT OSS 120B",
-    Callback = function()
-        AIModel = "GPTOSS120B"  
-        AIModelLabel:Set("Selected AI Model: GPT OSS 120B.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local GPTOSS20B = MainTab:CreateButton({
-    Name = "Set AI Model To: GPT OSS 20B",
-    Callback = function()
-        AIModel = "GPTOSS20B"  
-        AIModelLabel:Set("Selected AI Model: GPT OSS 20B.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local Qwen332B = MainTab:CreateButton({
-    Name = "Set AI Model To: Qwen 3 32B",
-    Callback = function()
-        AIModel = "Qwen332B"  
-        AIModelLabel:Set("Selected AI Model: Qwen 3 32B.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local Llama4Scout = MainTab:CreateButton({
-    Name = "Set AI Model To: Llama 4 Scout",
-    Callback = function()
-        AIModel = "Llama4Scout"  
-        AIModelLabel:Set("Selected AI Model: Llama 4 Scout.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local AIOutPutMethodSection = MainTab:CreateSection("AI OutPut Method")
-local AIOutPutMethodLabel = MainTab:CreateLabel("Selected OutPut Method: None.", nil, Color3.fromRGB(0, 0, 0), false)
-local OutputMethodNotificationButton = MainTab:CreateButton({
-    Name = "Set OutPut Method To: Notification",
-    Callback = function()
-        OutPutMethod = "Notification"  
-        AIOutPutMethodLabel:Set("Selected OutPut Method: Notification.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local OutputMethodChat = MainTab:CreateButton({
-    Name = "Set OutPut Method To: Chat",
-    Callback = function()
-        OutPutMethod = "Chat"  
-        AIOutPutMethodLabel:Set("Selected OutPut Method: Chat.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local OutputMethodCopyButton = MainTab:CreateButton({
-    Name = "Set OutPut Method To: Copy",
-    Callback = function()
-        OutPutMethod = "Copy"  
-        AIOutPutMethodLabel:Set("Selected OutPut Method: Copy.", nil, Color3.fromRGB(0, 0, 0), false) 
-    end,
-})
-
-local MainAIPart = MainTab:CreateSection("Main")
-
-local GroqAPIKeyInput = MainTab:CreateInput({
-    Name = "Groq API Key",
-    CurrentValue = "",
-    PlaceholderText = "Your API Key Starts With 'gsk_'",
-    RemoveTextAfterFocusLost = false,
-    Flag = "GroqAPIKey",
-    Callback = function(Text)
-        GroqAPIKey = tostring(Text)
-    end,
-})
-
-local AIPersonalityInput = MainTab:CreateInput({
-    Name = "Personality",
-    CurrentValue = "",
-    PlaceholderText = "You Are SpongeBob",
-    RemoveTextAfterFocusLost = false,
-    Flag = "AIPersonality",
-    Callback = function(Text)
-        AIPersonality = tostring(Text)
-    end,
-})
-
-local Question = MainTab:CreateInput({
-    Name = "Question",
-    CurrentValue = "",
-    PlaceholderText = "Does Mr. Krabs UnderPay You?",
-    RemoveTextAfterFocusLost = false,
-    Flag = "Question",
-    Callback = function(Text)
-        AIQuestion = tostring(Text)
-    end,
-})
-
-local Ask = MainTab:CreateButton({
-    Name = "Ask AI",
-    Callback = function()
-        if AIModel == "" then
-            Rayfield:Notify({
-                Title = "No Chosen Model",
-                Content = "AI Model Is Not Chosen, Please Choose An AI Model",
-                Duration = 2.5,
-                Image = nil,
-            })
-            return
-        end
-
-        if OutPutMethod == "" then
-            Rayfield:Notify({
-                Title = "No Chosen OutPut Method",
-                Content = "OutPut Method Is Not Chosen, Please Choose An OutPut Method",
-                Duration = 2.5,
-                Image = nil,
-            })
-            return
-        end
-
-        if GroqAPIKey == "" then
-            Rayfield:Notify({
-                Title = "No API Key",
-                Content = "There is No API Key Provided, Please Provide Us With The API Key",
-                Duration = 2.5,
-                Image = nil,
-            })
-            return
-        end
-
-        if AIPersonality == "" then
-            Rayfield:Notify({
-                Title = "No Personality Entered",
-                Content = "There is Personality Provided, Please Provide Us With A Personality",
-                Duration = 2.5,
-                Image = nil,
-            })
-            return
-        end
-
-        if AIQuestion == "" then
-            Rayfield:Notify({
-                Title = "No Question Entered",
-                Content = "There is Question Provided, Please Provide Us With A Question",
-                Duration = 2.5,
-                Image = nil,
-            })
-            return
-        end
-            
-        AIFunction()
-    end,
-})
