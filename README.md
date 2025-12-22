@@ -1,7 +1,7 @@
 My Lua Script
 So far I included
 1. Useless Bypasser [Open Sourced]
-2. Useless AI [Coming Soon] [Will Be Open Sourced]
+2. Useless AI [BETA] [Open Sourced]
 3. Universal Bot
 4. +1,000 Damage Every Second
 5. Color Game! 🎨
