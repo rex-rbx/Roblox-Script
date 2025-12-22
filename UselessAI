@@ -1,0 +1,398 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local TextChatService = game:GetService("TextChatService")
+local ChatService = game:GetService("Chat")
+AIModel = ""
+OutPutMethod = ""
+GroqAPIKey = ""
+AIPersonality = ""
+AIQuestion = ""
+
+function AIFunction()
+    local GroqURL = "https://api.Groq.com/openai/v1/chat/completions"
+    local Model = ""
+    Tools = {}
+    ToolCallBack = {}
+    Groq = {}
+    
+    Body = {
+        ["model"] = Model,
+        ["messages"] = {
+            ["role"] = "system",
+            ["content"] = ""
+        },
+        ["tools"] = Tools,
+        ["tool_choice"] = "auto",
+        ["parallel_tool_calls"] = false
+    }
+    
+    local AIObj = {}
+    AIObj.__index = AIObj
+    function AIObj.new(Response)
+        local Self = setmetatable({}, AIObj)
+        local HttpService = game:GetService("HttpService")
+        local CAIArray = HttpService:JSONDecode(Response)
+        
+        Self.StopReason = CAIArray.choices[1].finish_reason
+        if Self.StopReason == "tool_calls" then
+            Self.ToolsUse = CAIArray.choices[1].message.tool_calls
+        else
+            Self.AIResponse = CAIArray.choices[1].message.content
+        end
+        Self.__tostring = Self.AIResponse
+        return Self
+    end
+    
+    local ToolParameterGen1 = {}
+    ToolParameterGen1.__index = ToolParameterGen1
+    function ToolParameterGen1.new(name, type, desc)
+        local Self = setmetatable({}, ToolParameterGen1)
+        Self[name] = {type = type, description = desc}
+        return Self
+    end
+    
+    local ToolParameterGen2 = {}
+    ToolParameterGen2.__index = ToolParameterGen2
+    function ToolParameterGen2.new(Name, type, Enm)
+        local Self = setmetatable({}, ToolParameterGen2)
+        Self[Name] = {type = type, enum = Enm}
+        return Self
+    end
+    
+    function Groq:SetModel(Model)
+        Body["model"] = Model
+        return 0
+    end
+    
+    function Groq:SetSystemPrompt(Prompt)
+        if not Body["messages"] then
+            Body["messages"] = {}
+        end
+        if not Body["messages"][1] then
+            Body["messages"][1] = {}
+        end
+        Body["messages"][1]["role"] = "system"
+        Body["messages"][1]["content"] = Prompt
+        return 0
+    end
+    
+    function Groq:RequestAI(Message, MaxTokens, Temp, Seed, Stop)
+        local HttpService = game:GetService("HttpService")
+        MaxTokens = MaxTokens or 256
+        Temp = Temp or 1
+        Seed = Seed or os.time()
+        Stop = Stop or ""
+    
+        Body["max_tokens"] = MaxTokens
+        Body["temperature"] = Temp
+        Body["seed"] = Seed
+        Body["stop"] = Stop
+        Body["tools"] = Tools
+        table.insert(Body.messages, {
+            ["role"] = "user",
+            ["content"] = Message
+        })
+    
+        local Req = request({
+            Url = GroqURL,
+            Method = "POST",
+            Body = HttpService:JSONEncode(Body),
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["Authorization"] = string.format("Bearer %s", GroqAPIKey)
+            }
+        })
+        print(Req.Body)
+        local AIObject = AIObj.new(Req.Body)
+    
+        if AIObject.StopReason == "stop" then
+            table.insert(Body.messages, {["role"] = "assistant", ["content"] = AIObject.AIResponse})
+        elseif AIObject.StopReason == "tool_calls" then
+            for k, v in ipairs(ToolCallBack) do
+                if v.name == AIObject.ToolsUse[1]["function"].name then
+                    local function ExtractArgs(ArgTable)
+                        local Args = {}
+                        for _, v in pairs(ArgTable) do
+                            table.insert(Args, v)
+                        end
+                        return Args
+                    end
+                    local ToolArgs = ExtractArgs(HttpService:JSONDecode(AIObject.ToolsUse[1]["function"].arguments)) 
+                    cans = v.callback(unpack(ToolArgs))
+                    table.insert(Body.messages, {["role"] = "tool", ["content"] = cans, ["tool_call_id"] = AIObject.ToolsUse[1].id})
+                end
+            end        
+        end 
+        return AIObject
+    end
+    
+    function Groq:CreateTool(Name, Description, Params, Required, CallBack)
+        Params = Params or {}
+        Required = Required or {}
+        CallBack = CallBack or function() end
+        
+        table.insert(Tools, {
+            ["type"] = "function",
+            ["function"] = {
+                ["name"] = name,
+                ["description"] = Description,
+                ["parameters"] = {
+                    ["type"] = "object",
+                    ["properties"] = Params,
+                    ["required"] = Required
+                }
+            }
+        })
+    
+        table.insert(ToolCallBack, {
+            ["name"] = Name,
+            ["callback"] = CallBack
+        })
+    end
+    
+    function Groq:ResetChats()
+        local System = Body.messages[1].content
+        Body.messages = {
+            {
+                ["role"] = "system",
+                ["content"] = System
+            }
+        }
+    end
+    
+    if AIModel == "GPTOSS120B" then
+        Groq:SetModel("openai/gpt-oss-120b")
+    elseif AIModel == "GPTOSS20B" then
+        Groq:SetModel("openai/gpt-oss-20b")
+    elseif AIModel == "Qwen332B" then
+        Groq:SetModel("qwen/qwen3-32b")
+    elseif AIModel == "Llama4Scout" then
+        Groq:SetModel("meta-llama/llama-4-scout-17b-16e-instruct")
+    end
+    
+    local Prompt = AIPersonality
+    if OutPutMethod == "Chat" then
+        Groq:SetSystemPrompt(AIPersonality .. " | You Must Keep Your Answers Under 200 Charecters, If I Tell You To Give Me More Than 200 Charecter You Must Respond With 'Sorry, The Response Is More Than 200 Charecters Which Is The Chat Limit'")
+    elseif OutPutMethod == "Copy" then 
+        Groq:SetSystemPrompt(AIPersonality)
+    elseif OutPutMethod == "Notification" then
+        Groq:SetSystemPrompt(AIPersonality)
+    end
+    
+    local Response = Groq:RequestAI(AIQuestion)
+    if OutPutMethod == "Chat" then
+        local Chatting, Chat = pcall(function()
+            return TextChatService.ChatInputBarConfiguration.TargetTextChannel
+        end)
+        
+        if Chatting and Chat then
+            Chat:SendAsync(Response.AIResponse)
+        else
+            warn("Error: Could Not Send")
+        end
+    elseif OutPutMethod == "Copy" then 
+        setclipboard(tostring(Response.AIResponse))
+    elseif OutPutMethod == "Notification" then
+        Rayfield:Notify({
+                Title = "AI Response",
+                Content = tostring(Response.AIResponse),
+                Duration = 5,
+                Image = nil,
+        })
+    end
+    
+    return Groq
+end
+
+local Window = Rayfield:CreateWindow({
+   Name = "Useless AI",
+   Icon = 0, 
+   LoadingTitle = "Useless AI",
+   LoadingSubtitle = "By 2EzMyBoi",
+   ShowText = "AI Menu",
+   Theme = "Default", 
+
+   ToggleUIKeybind = "Z",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, 
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, 
+      FileName = "Useless"
+   },
+
+   Discord = {
+      Enabled = false, 
+      Invite = "noinvitelink", 
+      RememberJoins = true 
+   },
+
+   KeySystem = false, 
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key", 
+      SaveKey = true, 
+      GrabKeyFromSite = false,
+      Key = {"Hello "} 
+   }
+})
+
+local MainTab = Window:CreateTab("Main", nil)
+local MainSection = MainTab:CreateSection("Information")
+local ImportantLabel = MainTab:CreateLabel("The Script Is Still In Beta, Expect Some Bugs.", nil, Color3.fromRGB(0, 0, 0), false)
+local ImportantLabel = MainTab:CreateLabel("Important: You Will Need To Add Your Own Groq API Key [Tutorial Dropping Soon!].", nil, Color3.fromRGB(0, 0, 0), false)
+local WarningLabel = MainTab:CreateLabel("Warning: Groq Does Not Allow Users To Use VPNs So Please Turn Off Any Connected VPNs.", nil, Color3.fromRGB(0, 0, 0), false)
+local AIModelSection = MainTab:CreateSection("AI Model")
+local AIModelLabel = MainTab:CreateLabel("Selected AI Model: None.", nil, Color3.fromRGB(0, 0, 0), false)
+local GPTOSS120B = MainTab:CreateButton({
+    Name = "Set AI Model To: GPT OSS 120B",
+    Callback = function()
+        AIModel = "GPTOSS120B"  
+        AIModelLabel:Set("Selected AI Model: GPT OSS 120B.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local GPTOSS20B = MainTab:CreateButton({
+    Name = "Set AI Model To: GPT OSS 20B",
+    Callback = function()
+        AIModel = "GPTOSS20B"  
+        AIModelLabel:Set("Selected AI Model: GPT OSS 20B.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local Qwen332B = MainTab:CreateButton({
+    Name = "Set AI Model To: Qwen 3 32B",
+    Callback = function()
+        AIModel = "Qwen332B"  
+        AIModelLabel:Set("Selected AI Model: Qwen 3 32B.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local Llama4Scout = MainTab:CreateButton({
+    Name = "Set AI Model To: Llama 4 Scout",
+    Callback = function()
+        AIModel = "Llama4Scout"  
+        AIModelLabel:Set("Selected AI Model: Llama 4 Scout.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local AIOutPutMethodSection = MainTab:CreateSection("AI OutPut Method")
+local AIOutPutMethodLabel = MainTab:CreateLabel("Selected OutPut Method: None.", nil, Color3.fromRGB(0, 0, 0), false)
+local OutputMethodNotificationButton = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Notification",
+    Callback = function()
+        OutPutMethod = "Notification"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Notification.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local OutputMethodChat = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Chat",
+    Callback = function()
+        OutPutMethod = "Chat"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Chat.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local OutputMethodCopyButton = MainTab:CreateButton({
+    Name = "Set OutPut Method To: Copy",
+    Callback = function()
+        OutPutMethod = "Copy"  
+        AIOutPutMethodLabel:Set("Selected OutPut Method: Copy.", nil, Color3.fromRGB(0, 0, 0), false) 
+    end,
+})
+
+local MainAIPart = MainTab:CreateSection("Main")
+
+local GroqAPIKeyInput = MainTab:CreateInput({
+    Name = "Groq API Key",
+    CurrentValue = "",
+    PlaceholderText = "Your API Key Starts With 'gsk_'",
+    RemoveTextAfterFocusLost = false,
+    Flag = "GroqAPIKey",
+    Callback = function(Text)
+        GroqAPIKey = tostring(Text)
+    end,
+})
+
+local AIPersonalityInput = MainTab:CreateInput({
+    Name = "Personality",
+    CurrentValue = "",
+    PlaceholderText = "You Are SpongeBob",
+    RemoveTextAfterFocusLost = false,
+    Flag = "AIPersonality",
+    Callback = function(Text)
+        AIPersonality = tostring(Text)
+    end,
+})
+
+local Question = MainTab:CreateInput({
+    Name = "Question",
+    CurrentValue = "",
+    PlaceholderText = "Does Mr. Krabs UnderPay You?",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Question",
+    Callback = function(Text)
+        AIQuestion = tostring(Text)
+    end,
+})
+
+local Ask = MainTab:CreateButton({
+    Name = "Ask AI",
+    Callback = function()
+        if AIModel == "" then
+            Rayfield:Notify({
+                Title = "No Chosen Model",
+                Content = "AI Model Is Not Chosen, Please Choose An AI Model",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if OutPutMethod == "" then
+            Rayfield:Notify({
+                Title = "No Chosen OutPut Method",
+                Content = "OutPut Method Is Not Chosen, Please Choose An OutPut Method",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if GroqAPIKey == "" then
+            Rayfield:Notify({
+                Title = "No API Key",
+                Content = "There is No API Key Provided, Please Provide Us With The API Key",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if AIPersonality == "" then
+            Rayfield:Notify({
+                Title = "No Personality Entered",
+                Content = "There is Personality Provided, Please Provide Us With A Personality",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+
+        if AIQuestion == "" then
+            Rayfield:Notify({
+                Title = "No Question Entered",
+                Content = "There is Question Provided, Please Provide Us With A Question",
+                Duration = 2.5,
+                Image = nil,
+            })
+            return
+        end
+            
+        AIFunction()
+    end,
+})
